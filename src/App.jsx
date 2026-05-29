@@ -1,20 +1,31 @@
-import { useState } from "react";
-import ProductCard from "./ProductCard.jsx";
+import { useEffect, useState } from "react";
+import LoginForm from "./LoginForm.jsx";
+import ProductsList from "./ProductsList.jsx";
 import ProductSummary from "./ProductSummary.jsx";
+import { productApi } from "./api/productApi";
 import "./App.css";
 
-const PRODUSE_INITIALE = [
-  { id: 1, name: "Tastatură mecanică", price: 349.9, stock: 12 },
-  { id: 2, name: "Monitor 27 inch 4K", price: 1899.0, stock: 3 },
-  { id: 3, name: "Mouse wireless", price: 159.5, stock: 0 },
-  { id: 4, name: "Webcam HD", price: 229.0, stock: 7 },
-];
-
 function App() {
-  const [produse, setProduse] = useState(PRODUSE_INITIALE);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem("jwt") !== null
+  );
+  const [produse, setProduse] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectat, setSelectat] = useState(null);
   const [filtru, setFiltru] = useState("");
   const [sortBy, setSortBy] = useState("implicit");
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setLoading(true);
+    setError(null);
+    productApi
+      .getAll()
+      .then(setProduse)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, [isLoggedIn]);
 
   const actualizeazaStoc = (productId, delta) => {
     setProduse((prev) =>
@@ -25,6 +36,21 @@ function App() {
       )
     );
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwt");
+    setIsLoggedIn(false);
+    setProduse([]);
+    setSelectat(null);
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="app">
+        <LoginForm onSuccess={() => setIsLoggedIn(true)} />
+      </div>
+    );
+  }
 
   const produseFiltrate = produse.filter((p) =>
     p.name.toLowerCase().includes(filtru.toLowerCase())
@@ -60,24 +86,20 @@ function App() {
             <option value="asc">Preț crescător</option>
             <option value="desc">Preț descrescător</option>
           </select>
+          <button className="btn-logout" onClick={handleLogout}>
+            Deconectează
+          </button>
         </div>
       </header>
       <ProductSummary products={produse} />
       <main>
-        <section className="product-list">
-          {produseAfisate.length === 0 ? (
-            <p className="empty">Niciun produs găsit.</p>
-          ) : (
-            produseAfisate.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                onSelect={setSelectat}
-                onUpdateStock={actualizeazaStoc}
-              />
-            ))
-          )}
-        </section>
+        <ProductsList
+          products={produseAfisate}
+          loading={loading}
+          error={error}
+          onSelect={setSelectat}
+          onUpdateStock={actualizeazaStoc}
+        />
         {selectat && (
           <aside className="selected-info">
             <h2>Produs selectat</h2>
