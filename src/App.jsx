@@ -11,10 +11,20 @@ const PRODUSE_INITIALE = [
 ];
 
 function App() {
-  const [produse] = useState(PRODUSE_INITIALE);
+  const [produse, setProduse] = useState(PRODUSE_INITIALE);
   const [selectat, setSelectat] = useState(null);
   const [filtru, setFiltru] = useState("");
   const [sortBy, setSortBy] = useState("implicit");
+
+  const actualizeazaStoc = (productId, delta) => {
+    setProduse((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? { ...p, stock: Math.max(0, p.stock + delta) }
+          : p
+      )
+    );
+  };
 
   const produseFiltrate = produse.filter((p) =>
     p.name.toLowerCase().includes(filtru.toLowerCase())
@@ -59,7 +69,12 @@ function App() {
             <p className="empty">Niciun produs găsit.</p>
           ) : (
             produseAfisate.map((p) => (
-              <ProductCard key={p.id} product={p} onSelect={setSelectat} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                onSelect={setSelectat}
+                onUpdateStock={actualizeazaStoc}
+              />
             ))
           )}
         </section>
