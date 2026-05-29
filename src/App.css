@@ -12,12 +12,26 @@ header {
   margin-bottom: 24px;
 }
 
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .search {
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
   width: 240px;
+}
+
+.sort {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
 }
 
 main {
