@@ -31,7 +31,7 @@ function ProductCard({ product, onSelect, onUpdateStock }) {
       </div>
       <button
         className="btn-select"
-        onClick={() => onSelect(product)}
+        onClick={() => onSelect(product.id)}
         disabled={product.stock === 0}
       >
         Selectează

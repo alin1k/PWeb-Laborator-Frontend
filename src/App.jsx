@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import LoginForm from "./LoginForm.jsx";
+import ProductDetail from "./ProductDetail.jsx";
 import ProductsList from "./ProductsList.jsx";
 import ProductSummary from "./ProductSummary.jsx";
 import { productApi } from "./api/productApi";
@@ -12,12 +13,11 @@ function App() {
   const [produse, setProduse] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectat, setSelectat] = useState(null);
+  const [selectatId, setSelectatId] = useState(null);
   const [filtru, setFiltru] = useState("");
   const [sortBy, setSortBy] = useState("implicit");
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  const loadProducts = () => {
     setLoading(true);
     setError(null);
     productApi
@@ -25,6 +25,11 @@ function App() {
       .then(setProduse)
       .catch(setError)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    loadProducts();
   }, [isLoggedIn]);
 
   const actualizeazaStoc = (productId, delta) => {
@@ -41,7 +46,7 @@ function App() {
     localStorage.removeItem("jwt");
     setIsLoggedIn(false);
     setProduse([]);
-    setSelectat(null);
+    setSelectatId(null);
   };
 
   if (!isLoggedIn) {
@@ -86,6 +91,13 @@ function App() {
             <option value="asc">Preț crescător</option>
             <option value="desc">Preț descrescător</option>
           </select>
+          <button
+            className="btn-reload"
+            onClick={loadProducts}
+            disabled={loading}
+          >
+            Reîncarcă lista
+          </button>
           <button className="btn-logout" onClick={handleLogout}>
             Deconectează
           </button>
@@ -97,18 +109,14 @@ function App() {
           products={produseAfisate}
           loading={loading}
           error={error}
-          onSelect={setSelectat}
+          onSelect={setSelectatId}
           onUpdateStock={actualizeazaStoc}
         />
-        {selectat && (
+        {selectatId && (
           <aside className="selected-info">
             <h2>Produs selectat</h2>
-            <p>
-              <strong>{selectat.name}</strong>
-            </p>
-            <p>Preț: {selectat.price.toFixed(2)} lei</p>
-            <p>Stoc: {selectat.stock} buc</p>
-            <button onClick={() => setSelectat(null)}>Închide</button>
+            <ProductDetail id={selectatId} />
+            <button onClick={() => setSelectatId(null)}>Închide</button>
           </aside>
         )}
       </main>
