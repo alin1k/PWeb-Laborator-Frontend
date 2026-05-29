@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductCard from "./ProductCard.jsx";
+import ProductSummary from "./ProductSummary.jsx";
 import "./App.css";
 
 const PRODUSE_INITIALE = [
@@ -51,6 +52,7 @@ function App() {
           </select>
         </div>
       </header>
+      <ProductSummary products={produse} />
       <main>
         <section className="product-list">
           {produseAfisate.length === 0 ? (
