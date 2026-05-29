@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProductCard from "./ProductCard.jsx";
+import ProductSummary from "./ProductSummary.jsx";
 import "./App.css";
 
 const PRODUSE_INITIALE = [
@@ -10,32 +11,70 @@ const PRODUSE_INITIALE = [
 ];
 
 function App() {
-  const [produse] = useState(PRODUSE_INITIALE);
+  const [produse, setProduse] = useState(PRODUSE_INITIALE);
   const [selectat, setSelectat] = useState(null);
   const [filtru, setFiltru] = useState("");
+  const [sortBy, setSortBy] = useState("implicit");
+
+  const actualizeazaStoc = (productId, delta) => {
+    setProduse((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? { ...p, stock: Math.max(0, p.stock + delta) }
+          : p
+      )
+    );
+  };
 
   const produseFiltrate = produse.filter((p) =>
     p.name.toLowerCase().includes(filtru.toLowerCase())
   );
 
+  const produseAfisate = (() => {
+    if (sortBy === "asc") {
+      return [...produseFiltrate].sort((a, b) => a.price - b.price);
+    }
+    if (sortBy === "desc") {
+      return [...produseFiltrate].sort((a, b) => b.price - a.price);
+    }
+    return produseFiltrate;
+  })();
+
   return (
     <div className="app">
       <header>
         <h1>Catalog produse</h1>
-        <input
-          className="search"
-          placeholder="Caută..."
-          value={filtru}
-          onChange={(e) => setFiltru(e.target.value)}
-        />
+        <div className="controls">
+          <input
+            className="search"
+            placeholder="Caută..."
+            value={filtru}
+            onChange={(e) => setFiltru(e.target.value)}
+          />
+          <select
+            className="sort"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="implicit">Implicit</option>
+            <option value="asc">Preț crescător</option>
+            <option value="desc">Preț descrescător</option>
+          </select>
+        </div>
       </header>
+      <ProductSummary products={produse} />
       <main>
         <section className="product-list">
-          {produseFiltrate.length === 0 ? (
+          {produseAfisate.length === 0 ? (
             <p className="empty">Niciun produs găsit.</p>
           ) : (
-            produseFiltrate.map((p) => (
-              <ProductCard key={p.id} product={p} onSelect={setSelectat} />
+            produseAfisate.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onSelect={setSelectat}
+                onUpdateStock={actualizeazaStoc}
+              />
             ))
           )}
         </section>
